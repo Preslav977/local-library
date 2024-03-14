@@ -3,7 +3,6 @@ const Author = require("../models/author");
 
 exports.author_list = asyncHandler(async (req, res, next) => {
   const allAuthors = await Author.find().sort({ family_name: 1 }).exec();
-
   res.render("author_list", {
     title: "Author List",
     author_list: allAuthors,

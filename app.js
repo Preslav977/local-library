@@ -1,6 +1,6 @@
+const mongoose = require("mongoose");
 const createError = require("http-errors");
 const express = require("express");
-const mongoose = require("mongoose");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
@@ -10,6 +10,7 @@ const usersRouter = require("./routes/users");
 const catalogRouter = require("./routes/catalog");
 
 const app = express();
+
 mongoose.set("strictQuery", false);
 const mongoDB =
   "mongodb+srv://admin:22121955Bg971KEKW555@cluster0.vbzif3g.mongodb.net/local_library?retryWrites=true&w=majority&appName=Cluster0";
