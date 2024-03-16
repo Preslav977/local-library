@@ -115,6 +115,7 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
     res.redirect("/catalog/authors");
   }
 });
+
 exports.author_update_get = asyncHandler(async (req, res, next) => {
   const [author, allBooksByAuthor] = await Promise.all([
     Author.findById(req.params.id).exec(),
@@ -127,9 +128,11 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
     return next(err);
   }
 
-  allBooksByAuthor.forEach((book) => {
-    if (book.includes(author._id)) book.checked = "true";
-  });
+  // allBooksByAuthor.forEach((book) => {
+  //   console.log(book);
+
+  //   if (book.includes(book._id)) book.checked = "true";
+  // });
 
   res.render("author_form", {
     title: "Update Author",
