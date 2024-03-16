@@ -116,9 +116,93 @@ exports.author_delete_post = asyncHandler(async (req, res, next) => {
   }
 });
 exports.author_update_get = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Author update GET");
+  const [author, allBooksByAuthor] = await Promise.all([
+    Author.findById(req.params.id).exec(),
+    Book.find({ author: req.params.id }, "title summary").exec(),
+  ]);
+
+  if (author === null) {
+    const err = new Error("Author not found");
+    err.status = 404;
+    return next(err);
+  }
+
+  allBooksByAuthor.forEach((book) => {
+    if (book.includes(author._id)) book.checked = "true";
+  });
+
+  res.render("author_form", {
+    title: "Update Author",
+    author,
+    author_books: allBooksByAuthor,
+  });
 });
 
-exports.author_update_post = asyncHandler(async (req, res, next) => {
-  res.send("NOT IMPLEMENTED: Author update POST");
-});
+exports.author_update_post = [
+  (req, rex, next) => {
+    if (!Array.isArray(req.body.author)) {
+      req.body.author =
+        typeof req.body.author === "undefined" ? [] : [req.body.author];
+    }
+    next();
+  },
+  body("first_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("First name must be specified.")
+    .isAlphanumeric()
+    .withMessage("First name has non-alphanumeric characters."),
+  body("family_name")
+    .trim()
+    .isLength({ min: 1 })
+    .escape()
+    .withMessage("Family name must be specified.")
+    .isAlphanumeric()
+    .withMessage("Family name has non-alphanumeric characters."),
+  body("date_of_birth", "Invalid date of birth")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .toDate(),
+  body("date_of_death", "Invalid date of death")
+    .optional({ values: "falsy" })
+    .isISO8601()
+    .toDate(),
+
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+    const newAuthor = new Author({
+      first_name: req.body.first_name,
+      family_name: req.body.family_name,
+      date_of_birth: req.body.date_of_birth,
+      date_of_death: req.body.date_of_death,
+      _id: req.params.id,
+    });
+
+    if (!errors.isEmpty()) {
+      const [author, allBooksByAuthor] = await Promise.all([
+        Author.findById(req.params.id).exec(),
+        Book.find({ author: req.params.id }, "title summary").exec(),
+      ]);
+
+      for (const author in allBooksByAuthor) {
+        if (author.book.indexOf(author._id) > -1) {
+          author.checked = "true";
+        }
+      }
+      res.render("author_form", {
+        title: "Update Author",
+        author,
+        author_books: allBooksByAuthor,
+        errors: errors.array(),
+      });
+    } else {
+      const updatedAuthor = await Author.findByIdAndUpdate(
+        req.params.id,
+        newAuthor,
+        {},
+      );
+      res.redirect(updatedAuthor.url);
+    }
+  }),
+];
