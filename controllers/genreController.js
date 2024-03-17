@@ -119,15 +119,7 @@ exports.genre_update_get = asyncHandler(async (req, res, next) => {
 });
 
 exports.genre_update_post = [
-  (req, res, next) => {
-    if (!Array.isArray(req.body.genre)) {
-      req.body.genre =
-        typeof req.body.genre === "undefined" ? [] : [req.body.genre];
-    }
-    next();
-  },
-
-  body("name", "Name must not be empty.").trim().isLength({ min: 1 }).escape(),
+  body("name", "Name must not be empty.").trim().isLength({ min: 3 }).escape(),
 
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
@@ -143,11 +135,6 @@ exports.genre_update_post = [
         Book.find({ genre: req.params.id }, "title summary").exec(),
       ]);
 
-      for (const book in booksInGenre) {
-        if (book.genre.indexOf(book._id) > -1) {
-          book.checked = "true";
-        }
-      }
       res.render("genre_form", {
         title: "Genre Form",
         genre,
@@ -158,7 +145,6 @@ exports.genre_update_post = [
       const updatedGenre = await Genre.findByIdAndUpdate(
         req.params.id,
         newGenre,
-        {},
       );
       res.redirect(updatedGenre.url);
     }

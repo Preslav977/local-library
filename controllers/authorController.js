@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
+const debug = require("debug");
 const Author = require("../models/author");
 const Book = require("../models/book");
 
@@ -124,6 +125,7 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
   ]);
 
   if (author === null) {
+    debug(`id not found on update: ${req.params.id}`);
     const err = new Error("Author not found");
     err.status = 404;
     return next(err);
@@ -137,13 +139,6 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
 });
 
 exports.author_update_post = [
-  (req, rex, next) => {
-    if (!Array.isArray(req.body.author)) {
-      req.body.author =
-        typeof req.body.author === "undefined" ? [] : [req.body.author];
-    }
-    next();
-  },
   body("first_name")
     .trim()
     .isLength({ min: 1 })
@@ -183,11 +178,6 @@ exports.author_update_post = [
         Book.find({ author: req.params.id }, "title summary").exec(),
       ]);
 
-      for (const authors in allBooksByAuthor) {
-        if (authors.book.indexOf(author._id) > -1) {
-          authors.checked = "true";
-        }
-      }
       res.render("author_form", {
         title: "Update Author",
         author,
@@ -198,7 +188,6 @@ exports.author_update_post = [
       const updatedAuthor = await Author.findByIdAndUpdate(
         req.params.id,
         newAuthor,
-        {},
       );
       res.redirect(updatedAuthor.url);
     }

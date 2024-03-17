@@ -160,7 +160,6 @@ exports.bookinstance_update_post = [
       const updatedBookInstance = await BookInstance.findByIdAndUpdate(
         req.params.id,
         newBookInstance,
-        {},
       );
       res.redirect(updatedBookInstance.url);
     }
