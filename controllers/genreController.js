@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const Genre = require("../models/genre");
@@ -102,18 +103,13 @@ exports.genre_delete_post = asyncHandler(async (req, res, next) => {
 exports.genre_update_get = asyncHandler(async (req, res, next) => {
   const [genre, booksInGenre] = await Promise.all([
     Genre.findById(req.params.id).exec(),
-    Book.find({ genre: req.params.id }, "genre").exec(),
+    Book.find({ genre: req.params.id }, "title summary").exec(),
   ]);
   if (genre === null) {
     const err = new Error("Genre not found");
     err.status = 404;
     return next(err);
   }
-
-  // booksInGenre.forEach((book) => {
-  // console.log(book.genre.id);
-  // if (book.includes(genre)) book.checked = "true";
-  // });
 
   res.render("genre_form", {
     title: "Genre Form",
@@ -130,19 +126,24 @@ exports.genre_update_post = [
     }
     next();
   },
+
   body("name", "Name must not be empty.").trim().isLength({ min: 1 }).escape(),
+
   asyncHandler(async (req, res, next) => {
     const errors = validationResult(req);
+
     const newGenre = new Genre({
-      name: req.body.genre,
+      name: req.body.name,
       _id: req.params.id,
     });
+
     if (!errors.isEmpty()) {
-      const [genre, booksInGenre] = Promise.all([
+      const [genre, booksInGenre] = await Promise.all([
         Genre.findById(req.params.id).exec(),
         Book.find({ genre: req.params.id }, "title summary").exec(),
       ]);
-      for (const book of booksInGenre) {
+
+      for (const book in booksInGenre) {
         if (book.genre.indexOf(book._id) > -1) {
           book.checked = "true";
         }

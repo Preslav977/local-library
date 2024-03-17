@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const Author = require("../models/author");
@@ -128,12 +129,6 @@ exports.author_update_get = asyncHandler(async (req, res, next) => {
     return next(err);
   }
 
-  // allBooksByAuthor.forEach((book) => {
-  //   console.log(book);
-
-  //   if (book.includes(book._id)) book.checked = "true";
-  // });
-
   res.render("author_form", {
     title: "Update Author",
     author,
@@ -188,9 +183,9 @@ exports.author_update_post = [
         Book.find({ author: req.params.id }, "title summary").exec(),
       ]);
 
-      for (const author in allBooksByAuthor) {
-        if (author.book.indexOf(author._id) > -1) {
-          author.checked = "true";
+      for (const authors in allBooksByAuthor) {
+        if (authors.book.indexOf(author._id) > -1) {
+          authors.checked = "true";
         }
       }
       res.render("author_form", {

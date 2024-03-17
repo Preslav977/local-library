@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const Book = require("../models/book");
