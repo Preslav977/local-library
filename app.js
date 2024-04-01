@@ -1,10 +1,11 @@
+require("dotenv").config();
+const nconf = require("nconf");
+const express = require("express");
 const mongoose = require("mongoose");
 const createError = require("http-errors");
-const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
-
 const compression = require("compression");
 const helmet = require("helmet");
 const RateLimit = require("express-rate-limit");
@@ -14,12 +15,17 @@ const catalogRouter = require("./routes/catalog");
 
 const app = express();
 
+nconf.argv().env().file({ file: "path/to/config.json" });
+
+nconf.set("database:host", "localhost");
+nconf.set("database:port", 3000);
+
 const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
   max: 20,
 });
 
-app.apply(limiter);
+app.use(limiter);
 
 app.use(compression());
 
@@ -32,8 +38,7 @@ app.use(
 );
 
 mongoose.set("strictQuery", false);
-const dev_db_url =
-  "mongodb+srv://admin:22121955Bg971KEKW555@cluster0.vbzif3g.mongodb.net/local_library?retryWrites=true&w=majority&appName=Cluster0";
+const dev_db_url = process.env.mongoURL;
 const mongoDB = process.env.MONGODB_URI || dev_db_url;
 
 main().catch((err) => console.log(err));
